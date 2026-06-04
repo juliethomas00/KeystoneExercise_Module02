@@ -19,4 +19,17 @@ Keystone Exercise at the end of Workshop 2 in Module 2
 
 # Your mission is to write a single, reproducible R script (or .qmd) that ingests this mess, cleans it, joins it into a single master dataset, and produces a publication-ready visualisation of the estuary's ecology.
 
+
+# Deliverables (to include in ePortfolio report/page)
+# At the end of this exercise, your final script/document must successfully output:
+  # A clean master dataset containing no legacy errors (-999.0     ), standardised text, a complete zero-catch framework, and     scientific names instead of common names.
+  # A statistical summary table displaying the mean and           standard deviation of fish counts and salinity for each       species per zone.
+  # A multi-panel plot (faceted by species) showing fish          abundance along the salinity gradient, formatted to           professional publication standards.
+
+# Rules of Engagement
+# Because this is an open-ended task, there is no single "correct" way to approach this and structure your code. However, think about all the data-wrangling and visualisation skills you have developed over recent weeks, and adhere to the following professional standards:
+  # Monitor your AI agents: You are encouraged to use AI to help you write code. However, for every major data w          wrangling step, make sure you understand what is going on     and are not just running AI-written code blindly.
+  # Annotate your work: To help you with the above, make sure     you include comments (#) explaining what the code is doing     . If you used an AI prompt to generate a complex block of     code, paste your prompt as a comment above it.
+  # Utilise the tidyverse: There are many ways of wrangling       data, but here we are looking for you to use your growing     skills in dplyr, tidyr, stringr, and lubridate functions      linked by the pipe (|> or %>%).
+  # Reproducible workflow: Make sure you stay on top of your      PC → Git → GitHub lifecycle, by utilising: save, commit,      pull, push!
 ```
