@@ -23,3 +23,5 @@ output/
 
 # Keywords to ignore
 *archive
+.httr-oauth
+.quarto

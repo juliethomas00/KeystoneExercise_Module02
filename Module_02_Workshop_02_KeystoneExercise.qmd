@@ -1,0 +1,22 @@
+---
+title: "Module_02_Workshop_02_KeystoneExercise"
+format: html
+editor: visual
+---
+
+## Introduction
+
+Keystone Exercise at the end of Workshop 2 in Module 2
+
+```{r}
+# Keystone exercise: Estuary Fish Survey - Data Rescue Mission
+# The Premise: You have inherited a project from a former PhD student who was studying the relationship between water quality and predatory fish assemblages along the Ross River Estuary gradient. Unfortunately, their data management was entirely manual, and the files are a disaster.
+# They left you with four separate datasets:
+  # estuary_catch_log.xlsx: Handwritten field counts of fish      species (using common names), spread across multiple          spreadsheet tabs.
+  # estuary_metadata.csv: The spatial coordinates and estuary     zones for each site.
+  # estuary_sonde_data.csv: High-frequency water quality          sensor readings.
+  # species_dictionary.csv: A taxonomic lookup table linking      local common names to their accepted scientific names.
+
+# Your mission is to write a single, reproducible R script (or .qmd) that ingests this mess, cleans it, joins it into a single master dataset, and produces a publication-ready visualisation of the estuary's ecology.
+
+```
