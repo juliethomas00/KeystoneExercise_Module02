@@ -57,22 +57,25 @@ catch1 <- read_excel(here::here("data/workshop2/estuary_catch_log.xlsx"), sheet 
 catch2 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 2)
 catch3 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 3)
 catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 4)
+```
 
+# Inspect individual tabs
+
+```{r}
+catch1
+catch2
+catch3
+catch4
+```
+
+# Bind rows together
+```{r}
 catch_data <- bind_rows(catch1, catch2, catch3, catch4)
 # Clean up the environment
 rm(catch1, catch2, catch3, catch4) # Clean up the environment
 ```
 
-# Alternative method for loading files
-
-```{r}
-# file_path <- "../data/workshop2/estuary_catch_log.xlsx"
-# catch_data2 <- excel_sheets(file_path) |>
-#   map_dfr(~read_excel(path = file_path, sheet = .x))
-```
-
 # Examine data
-
 ```{r}
 catch_data
 head(catch_data)
@@ -83,9 +86,91 @@ str(catch_data)
 Can't tell from these outputs how many levels of site and species we have. Two options: let's check those explicitly by using distinct() or can convert to factors Let's look at the distinct values first, as we might need to clean before converting to factor vars.
 
 ```{r}
-catch_raw |> 
+catch_data |> 
   distinct(site)
 
-catch_raw |> 
+catch_data |> 
   distinct(species)
 ```
+OK, so we have four species in there as well as four sites which look to be located at different points on the Ross River.
+Need to:
+- Fix site names and place in reasonable order. 
+- Can decide this now or we can load the metadata and ensure consistency
+- Fix species names - to do this we'll need to make consistent and then use the taxonomic dictionary to translate to scientific names.
+
+
+# Load metadata
+```{r}
+metadata <- read_csv("../data/workshop2/estuary_metadata.csv")
+```
+
+
+# Inspect
+```{r}
+head(metadata)
+glimpse(metadata)
+```
+
+Site names are all over the place in the metadata too - will need to standardise.
+
+
+```{r}
+catch_data <- catch_data |>
+  mutate(
+    site = str_to_lower(str_trim(site)),
+    site = str_replace_all(site, " ", "_")) |> 
+  # Convert all chr to fct
+  mutate(across(where(is.character), as_factor)
+  )
+
+metadata <- metadata |>
+  mutate(
+    site_name = str_to_lower(str_trim(site_name)),
+    site_name = str_replace_all(site_name, " ", "_")) |> 
+  # Convert all chr to fct
+  mutate(across(where(is.character), as_factor)
+  )
+```
+
+
+# Recheck
+```{r}
+catch_data |> 
+  str()
+# catch_data |> 
+#   distinct(site)
+glimpse(metadata)
+
+```
+
+
+# Load Taxonomic Dictionary
+```{r}
+species_dict <- read_csv("../data/workshop2/species_dictionary.csv")
+head(species_dict)
+```
+
+
+
+#  Load sensor data, 
+```{r}
+sensor_raw <- read_csv("../data/workshop2/estuary_sonde_data.csv")
+```
+
+
+# Check sensor data
+```{r}
+head(sensor_raw)
+str(sensor_raw)
+glimpse(sensor_raw)
+summary(sensor_raw)
+```
+
+
+#### Notes:
+- Environmental variables look like they are mostly in good shape (all numeric), however the turbidity data has a failed value (-999) so we'll need to deal with that
+- Site looks ok, but again should check how many levels or distinct values we have:
+
+
+
+
