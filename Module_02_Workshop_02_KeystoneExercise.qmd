@@ -19,7 +19,6 @@ Keystone Exercise at the end of Workshop 2 in Module 2
 
 # Your mission is to write a single, reproducible R script (or .qmd) that ingests this mess, cleans it, joins it into a single master dataset, and produces a publication-ready visualisation of the estuary's ecology.
 
-
 # Deliverables (to include in ePortfolio report/page)
 # At the end of this exercise, your final script/document must successfully output:
   # A clean master dataset containing no legacy errors (-999.0), standardised text, a complete zero-catch framework, and scientific names instead of common names.
