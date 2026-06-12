@@ -375,3 +375,15 @@ ggplot(master_df_completed,
     panel.grid.minor = element_blank()
   )
 ```
+
+```{r}
+# qdm to html
+
+install.packages("knitr")
+install.packages("markdown")
+library(knitr)
+library(markdown)
+
+knit("Module_02_Workshop_02_KeystoneExercise.qmd") # produces a .md file
+markdownToHTML("Module_02_Workshop_02_KeystoneExercise.md", "Module_02_Workshop_02_KeystoneExercise.html", fragment.only=TRUE) # produces clean .html
+```
