@@ -1,0 +1,641 @@
+<h2 id="sec:introduction">Introduction</h2>
+<p>Keystone Exercise at the end of Workshop 2 in Module 2</p>
+<pre><code class="language-r"># Keystone exercise: Estuary Fish Survey - Data Rescue Mission
+# The Premise: You have inherited a project from a former PhD student who was studying the relationship between water quality and predatory fish assemblages along the Ross River Estuary gradient. Unfortunately, their data management was entirely manual, and the files are a disaster.
+# They left you with four separate datasets:
+  # estuary_catch_log.xlsx: Handwritten field counts of fish species (using common names), spread across multiple spreadsheet tabs.
+  # estuary_metadata.csv: The spatial coordinates and estuary zones for each site.
+  # estuary_sonde_data.csv: High-frequency water quality sensor readings.
+  # species_dictionary.csv: A taxonomic lookup table linking local common names to their accepted scientific names.
+
+# Your mission is to write a single, reproducible R script (or .qmd) that ingests this mess, cleans it, joins it into a single master dataset, and produces a publication-ready visualisation of the estuary's ecology.
+
+# Deliverables (to include in ePortfolio report/page)
+# At the end of this exercise, your final script/document must successfully output:
+  # A clean master dataset containing no legacy errors (-999.0), standardised text, a complete zero-catch framework, and scientific names instead of common names.
+  # A statistical summary table displaying the mean and standard deviation of fish counts and salinity for each species per zone.
+  # A multi-panel plot (faceted by species) showing fish abundance along the salinity gradient, formatted to professional publication standards.
+
+# Rules of Engagement
+# Because this is an open-ended task, there is no single &quot;correct&quot; way to approach this and structure your code. However, think about all the data-wrangling and visualisation skills you have developed over recent weeks, and adhere to the following professional standards:
+  # Monitor your AI agents: You are encouraged to use AI to help you write code. However, for every major data wrangling step, make sure you understand what is going on and are not just running AI-written code blindly.
+  # Annotate your work: To help you with the above, make sure     you include comments (#) explaining what the code is doing. If you used an AI prompt to generate a complex block of code, paste your prompt as a comment above it.
+  # Utilise the tidyverse: There are many ways of wrangling data, but here we are looking for you to use your growing skills in dplyr, tidyr, stringr, and lubridate functions linked by the pipe (|&gt; or %&gt;%).
+  # Reproducible workflow: Make sure you stay on top of your PC → Git → GitHub lifecycle, by utilising: save, commit, pull, push!
+</code></pre>
+<pre><code class="language-r"># installing chattr
+
+#install.packages(&quot;ellmer&quot;)
+#install.packages(&quot;chattr&quot;)
+#install.packages(&quot;usethis&quot;)
+library(ellmer)
+</code></pre>
+<pre><code>## Warning: package 'ellmer' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code class="language-r">library(chattr)
+</code></pre>
+<pre><code>## Warning: package 'chattr' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code>## Registered S3 methods overwritten by 'htmltools':
+##   method               from         
+##   print.html           tools:rstudio
+##   print.shiny.tag      tools:rstudio
+##   print.shiny.tag.list tools:rstudio
+</code></pre>
+<pre><code class="language-r">library(usethis)
+</code></pre>
+<pre><code>## Warning: package 'usethis' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code class="language-r"># Phase 1 : Ingestion and Decontamination
+# Load the four datasets
+
+#install.packages(&quot;tidyverse&quot;)
+#install.packages(&quot;readxl&quot;)
+#install.packages(&quot;here&quot;)
+library(tidyverse)
+</code></pre>
+<pre><code>## Warning: package 'tidyverse' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code>## Warning: package 'ggplot2' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code>## Warning: package 'tibble' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code>## Warning: package 'tidyr' was built under R version 4.5.3
+</code></pre>
+<pre><code>## Warning: package 'readr' was built under R version 4.5.3
+</code></pre>
+<pre><code>## Warning: package 'purrr' was built under R version 4.5.3
+</code></pre>
+<pre><code>## Warning: package 'dplyr' was built under R version 4.5.3
+</code></pre>
+<pre><code>## Warning: package 'stringr' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code>## Warning: package 'forcats' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code>## Warning: package 'lubridate' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code>## ── Attaching core tidyverse packages ────────────────────
+## ✔ dplyr     1.2.1     ✔ readr     2.2.0
+## ✔ forcats   1.0.1     ✔ stringr   1.6.0
+## ✔ ggplot2   4.0.3     ✔ tibble    3.3.1
+## ✔ lubridate 1.9.5     ✔ tidyr     1.3.2
+## ✔ purrr     1.2.2     
+## ── Conflicts ─────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+</code></pre>
+<pre><code class="language-r">library(readxl)
+</code></pre>
+<pre><code>## Warning: package 'readxl' was built under R version
+## 4.5.3
+</code></pre>
+<pre><code class="language-r">library(here)
+</code></pre>
+<pre><code>## Warning: package 'here' was built under R version 4.5.3
+</code></pre>
+<pre><code>## here() starts at D:/MB5370/MB5370_Module_02/Class_Repository/Exercise_R4MarineScience/R4MarineScience
+</code></pre>
+<pre><code class="language-r">estuary_catch_log &lt;- read_excel(here::here(&quot;../R4MarineScience/data/workshop2/estuary_catch_log.xlsx&quot;))
+estuary_metadata &lt;- read_csv(here::here(&quot;../R4MarineScience/data/workshop2/estuary_metadata.csv&quot;))
+</code></pre>
+<pre><code>## Rows: 4 Columns: 4
+## ── Column specification ─────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (2): site_name, zone
+## dbl (2): lat, lon
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+</code></pre>
+<pre><code class="language-r">estuary_sonde_data &lt;- read_csv(here::here(&quot;../R4MarineScience/data/workshop2/estuary_sonde_data.csv&quot;))
+</code></pre>
+<pre><code>## Rows: 11520 Columns: 5
+## ── Column specification ─────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (2): site, timestamp
+## dbl (3): temperature, salinity, turbidity
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+</code></pre>
+<pre><code class="language-r">species_dictionary &lt;- read_csv(here::here(&quot;../R4MarineScience/data/workshop2/species_dictionary.csv&quot;))
+</code></pre>
+<pre><code>## Rows: 4 Columns: 2
+## ── Column specification ─────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (2): common_name, scientific_name
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+</code></pre>
+<pre><code class="language-r">glimpse(estuary_catch_log)
+</code></pre>
+<pre><code>## Rows: 104
+## Columns: 4
+## $ site    &lt;chr&gt; &quot;Lower_ross&quot;, &quot;Lower_ross&quot;, &quot;Lower_ross…
+## $ date    &lt;dttm&gt; 2026-05-01, 2026-05-01, 2026-05-01, 20…
+## $ species &lt;chr&gt; &quot;barramundi&quot;, &quot;MANGROVE JACK&quot;, &quot;bream&quot;,…
+## $ count   &lt;dbl&gt; 6, 3, 4, 2, 1, 1, 3, 3, 2, 3, 1, 8, 4, …
+</code></pre>
+<pre><code class="language-r"># columns = site, date, species, count
+glimpse(estuary_metadata)
+</code></pre>
+<pre><code>## Rows: 4
+## Columns: 4
+## $ site_name &lt;chr&gt; &quot;Upper_Ross&quot;, &quot;mid_ross&quot;, &quot;LOWER ROSS…
+## $ lat       &lt;dbl&gt; -19.31, -19.28, -19.26, -19.25
+## $ lon       &lt;dbl&gt; 146.74, 146.78, 146.81, 146.83
+## $ zone      &lt;chr&gt; &quot;Upstream&quot;, &quot;Middle&quot;, &quot;Downstream&quot;, &quot;…
+</code></pre>
+<pre><code class="language-r"># columns = site_name, lat, lon, zone - will have to change site_name to site to be able to join
+glimpse(estuary_sonde_data)
+</code></pre>
+<pre><code>## Rows: 11,520
+## Columns: 5
+## $ site        &lt;chr&gt; &quot;upper_ross&quot;, &quot;mid_ross&quot;, &quot;lower_ro…
+## $ timestamp   &lt;chr&gt; &quot;01/05/2026 00:00&quot;, &quot;01/05/2026 00:…
+## $ temperature &lt;dbl&gt; 23.71379, 24.13302, 24.23558, 24.64…
+## $ salinity    &lt;dbl&gt; 4.054812, 15.742962, 28.934938, 33.…
+## $ turbidity   &lt;dbl&gt; 6.489046, 49.216967, 48.135752, 49.…
+</code></pre>
+<pre><code class="language-r"># columns = site, timestamp, temperature, salinity, turbidity
+glimpse(species_dictionary)
+</code></pre>
+<pre><code>## Rows: 4
+## Columns: 2
+## $ common_name     &lt;chr&gt; &quot;barramundi&quot;, &quot;mangrove_jack&quot;, …
+## $ scientific_name &lt;chr&gt; &quot;Lates calcarifer&quot;, &quot;Lutjanus a…
+</code></pre>
+<pre><code class="language-r"># columns = common name, scientific name
+</code></pre>
+<pre><code class="language-r"># Excel Tab Iteration: The catch log is split across multiple tabs (one for each site). You will need to figure out how to read all tabs and bind them together into a single data frame
+excel_sheets &lt;- excel_sheets(here::here(&quot;../R4MarineScience/data/workshop2/estuary_catch_log.xlsx&quot;))
+
+estuary_catch_log_combined &lt;-
+  map_df(excel_sheets, ~ read_excel(here::here(&quot;../R4MarineScience/data/workshop2/estuary_catch_log.xlsx&quot;), sheet = .x))
+
+glimpse(estuary_catch_log_combined)
+</code></pre>
+<pre><code>## Rows: 427
+## Columns: 4
+## $ site    &lt;chr&gt; &quot;Lower_ross&quot;, &quot;Lower_ross&quot;, &quot;Lower_ross…
+## $ date    &lt;dttm&gt; 2026-05-01, 2026-05-01, 2026-05-01, 20…
+## $ species &lt;chr&gt; &quot;barramundi&quot;, &quot;MANGROVE JACK&quot;, &quot;bream&quot;,…
+## $ count   &lt;dbl&gt; 6, 3, 4, 2, 1, 1, 3, 3, 2, 3, 1, 8, 4, …
+</code></pre>
+<pre><code class="language-r"># renaming column site_name to site in estuary_metadata
+
+estuary_metadata &lt;-
+  estuary_metadata %&gt;%
+  rename(site = site_name) # commented it out once altered as it produces an error
+
+glimpse(estuary_metadata)
+</code></pre>
+<pre><code>## Rows: 4
+## Columns: 4
+## $ site &lt;chr&gt; &quot;Upper_Ross&quot;, &quot;mid_ross&quot;, &quot;LOWER ROSS&quot;, &quot;r…
+## $ lat  &lt;dbl&gt; -19.31, -19.28, -19.26, -19.25
+## $ lon  &lt;dbl&gt; 146.74, 146.78, 146.81, 146.83
+## $ zone &lt;chr&gt; &quot;Upstream&quot;, &quot;Middle&quot;, &quot;Downstream&quot;, &quot;Marin…
+</code></pre>
+<pre><code class="language-r"># String Standardisation: The site and species names in the catch log are a mess (e.g., &quot;MANGROVE JACK&quot; vs &quot;mangrove_jack&quot;). Standardise all site and species columns to lowercase with underscores so they can securely match your dictionary and metadata tables later.
+
+estuary_catch_log_combined &lt;-
+  estuary_catch_log_combined %&gt;%
+  mutate(
+    site = tolower(str_replace_all(site, &quot; &quot;, &quot;_&quot;)),
+    species = tolower(str_replace_all(species, &quot; &quot;, &quot;_&quot;))
+  )
+
+estuary_metadata &lt;-
+  estuary_metadata %&gt;%
+  mutate(site = tolower(str_replace_all(site, &quot; &quot;, &quot;_&quot;)))
+
+estuary_sonde_data &lt;-
+  estuary_sonde_data %&gt;%
+  mutate(site = tolower(str_replace_all(site, &quot; &quot;, &quot;_&quot;)))
+
+species_dictionary &lt;-
+  species_dictionary %&gt;%
+  mutate(
+    common_name = tolower(str_replace_all(common_name, &quot; &quot;, &quot;_&quot;)),
+    scientific_name = tolower(str_replace_all(scientific_name, &quot; &quot;, &quot;_&quot;))
+  )
+
+glimpse(estuary_catch_log_combined)
+</code></pre>
+<pre><code>## Rows: 427
+## Columns: 4
+## $ site    &lt;chr&gt; &quot;lower_ross&quot;, &quot;lower_ross&quot;, &quot;lower_ross…
+## $ date    &lt;dttm&gt; 2026-05-01, 2026-05-01, 2026-05-01, 20…
+## $ species &lt;chr&gt; &quot;barramundi&quot;, &quot;mangrove_jack&quot;, &quot;bream&quot;,…
+## $ count   &lt;dbl&gt; 6, 3, 4, 2, 1, 1, 3, 3, 2, 3, 1, 8, 4, …
+</code></pre>
+<pre><code class="language-r">glimpse(estuary_metadata)
+</code></pre>
+<pre><code>## Rows: 4
+## Columns: 4
+## $ site &lt;chr&gt; &quot;upper_ross&quot;, &quot;mid_ross&quot;, &quot;lower_ross&quot;, &quot;r…
+## $ lat  &lt;dbl&gt; -19.31, -19.28, -19.26, -19.25
+## $ lon  &lt;dbl&gt; 146.74, 146.78, 146.81, 146.83
+## $ zone &lt;chr&gt; &quot;Upstream&quot;, &quot;Middle&quot;, &quot;Downstream&quot;, &quot;Marin…
+</code></pre>
+<pre><code class="language-r">glimpse(estuary_sonde_data)
+</code></pre>
+<pre><code>## Rows: 11,520
+## Columns: 5
+## $ site        &lt;chr&gt; &quot;upper_ross&quot;, &quot;mid_ross&quot;, &quot;lower_ro…
+## $ timestamp   &lt;chr&gt; &quot;01/05/2026 00:00&quot;, &quot;01/05/2026 00:…
+## $ temperature &lt;dbl&gt; 23.71379, 24.13302, 24.23558, 24.64…
+## $ salinity    &lt;dbl&gt; 4.054812, 15.742962, 28.934938, 33.…
+## $ turbidity   &lt;dbl&gt; 6.489046, 49.216967, 48.135752, 49.…
+</code></pre>
+<pre><code class="language-r">glimpse(species_dictionary)
+</code></pre>
+<pre><code>## Rows: 4
+## Columns: 2
+## $ common_name     &lt;chr&gt; &quot;barramundi&quot;, &quot;mangrove_jack&quot;, …
+## $ scientific_name &lt;chr&gt; &quot;lates_calcarifer&quot;, &quot;lutjanus_a…
+</code></pre>
+<pre><code class="language-r"># successfully cleaned
+</code></pre>
+<pre><code class="language-r"># Temporal Parsing: The dates in the sonde dataset are messy character strings. Parse them into formal Date-Time objects.
+
+# date in estuary_catch_log_combined
+# timestamp in estuary_sonde_data - change this column name to date for consistency, maybe later
+
+estuary_catch_log_combined &lt;- estuary_catch_log_combined %&gt;%
+  mutate(date = as.Date(gsub(&quot; UTC&quot;, &quot;&quot;, date)))
+
+estuary_sonde_data &lt;- estuary_sonde_data %&gt;%
+  mutate(timestamp = dmy_hm(timestamp, tz = &quot;UTC&quot;))
+
+glimpse(estuary_catch_log_combined)
+</code></pre>
+<pre><code>## Rows: 427
+## Columns: 4
+## $ site    &lt;chr&gt; &quot;lower_ross&quot;, &quot;lower_ross&quot;, &quot;lower_ross…
+## $ date    &lt;date&gt; 2026-05-01, 2026-05-01, 2026-05-01, 20…
+## $ species &lt;chr&gt; &quot;barramundi&quot;, &quot;mangrove_jack&quot;, &quot;bream&quot;,…
+## $ count   &lt;dbl&gt; 6, 3, 4, 2, 1, 1, 3, 3, 2, 3, 1, 8, 4, …
+</code></pre>
+<pre><code class="language-r">glimpse(estuary_sonde_data)
+</code></pre>
+<pre><code>## Rows: 11,520
+## Columns: 5
+## $ site        &lt;chr&gt; &quot;upper_ross&quot;, &quot;mid_ross&quot;, &quot;lower_ro…
+## $ timestamp   &lt;dttm&gt; 2026-05-01 00:00:00, 2026-05-01 00…
+## $ temperature &lt;dbl&gt; 23.71379, 24.13302, 24.23558, 24.64…
+## $ salinity    &lt;dbl&gt; 4.054812, 15.742962, 28.934938, 33.…
+## $ turbidity   &lt;dbl&gt; 6.489046, 49.216967, 48.135752, 49.…
+</code></pre>
+<pre><code class="language-r"># if I at some point want to join these datasets at these time points, use the code below (commented out for now)
+
+#estuary_catch_log_combined &lt;- estuary_catch_log_combined %&gt;%
+  #mutate(
+    #date = ymd(gsub(&quot; UTC&quot;, &quot;&quot;, date), tz = &quot;UTC&quot;)
+  #)
+</code></pre>
+<pre><code class="language-r"># Hardware Errors: The turbidity sensor occasionally failed and logged a value of -999.0. Identify these and convert them to true NA values before they ruin your averages.
+
+#glimpse(estuary_catch_log_combined)
+#glimpse(estuary_metadata)
+#glimpse(estuary_sonde_data) # contains temperature, salinity and turbidity
+#glimpse(species_dictionary)
+
+estuary_sonde_data &lt;- estuary_sonde_data %&gt;%
+  mutate(
+    temperature = na_if(temperature, -999.0),
+    salinity = na_if(salinity, -999.0),
+    turbidity = na_if(turbidity, -999.0)
+  )
+
+glimpse(estuary_sonde_data)
+</code></pre>
+<pre><code>## Rows: 11,520
+## Columns: 5
+## $ site        &lt;chr&gt; &quot;upper_ross&quot;, &quot;mid_ross&quot;, &quot;lower_ro…
+## $ timestamp   &lt;dttm&gt; 2026-05-01 00:00:00, 2026-05-01 00…
+## $ temperature &lt;dbl&gt; 23.71379, 24.13302, 24.23558, 24.64…
+## $ salinity    &lt;dbl&gt; 4.054812, 15.742962, 28.934938, 33.…
+## $ turbidity   &lt;dbl&gt; 6.489046, 49.216967, 48.135752, 49.…
+</code></pre>
+<pre><code class="language-r"># Phase 2: The Relational Architecture 
+# Bring the data together into a cohesive format
+
+# Summarise the water sensor data: The sensor data is logged every 15 minutes, but your catch data is daily. Create a daily summary table that calculates the mean temperature and salinity for each site on each day. (Hint: look at the floor_date() function to group by day).
+
+#daily_summary &lt;- estuary_sonde_data %&gt;%
+  #mutate(
+    #day = floor_date(timestamp, unit = &quot;day&quot;)
+  #) %&gt;%
+  #group_by(site, day) %&gt;%
+  #summarise(
+    #mean_temperature = mean(temperature, na.rm = TRUE),
+    #mean_salinity = mean(salinity, na.rm = TRUE),
+    #.groups = &quot;drop&quot;
+  #)
+
+#glimpse(daily_summary)
+# columns = site, day, mean_temperature, mean_salinity
+
+
+# altering the above code to include more information : mean_salinity, se_salinity, mean_temperature, se_temperature, mean_turbidity, se_turbidity
+library(dplyr)
+library(lubridate)
+
+daily_summary &lt;- estuary_sonde_data %&gt;%
+  mutate(
+    day = floor_date(timestamp, unit = &quot;day&quot;)
+  ) %&gt;%
+  group_by(site, day) %&gt;%
+  summarise(
+    mean_temperature = mean(temperature, na.rm = TRUE),
+    se_temperature = sd(temperature, na.rm = TRUE) /
+      sqrt(sum(!is.na(temperature))),
+
+    mean_salinity = mean(salinity, na.rm = TRUE),
+    se_salinity = sd(salinity, na.rm = TRUE) /
+      sqrt(sum(!is.na(salinity))),
+
+    mean_turbidity = mean(turbidity, na.rm = TRUE),
+    se_turbidity = sd(turbidity, na.rm = TRUE) /
+      sqrt(sum(!is.na(turbidity))),
+
+    .groups = &quot;drop&quot;
+  )
+
+glimpse(daily_summary)
+</code></pre>
+<pre><code>## Rows: 120
+## Columns: 8
+## $ site             &lt;chr&gt; &quot;lower_ross&quot;, &quot;lower_ross&quot;, &quot;l…
+## $ day              &lt;dttm&gt; 2026-05-01, 2026-05-02, 2026-…
+## $ mean_temperature &lt;dbl&gt; 23.79137, 23.98099, 24.17160, …
+## $ se_temperature   &lt;dbl&gt; 0.1473620, 0.1618928, 0.151489…
+## $ mean_salinity    &lt;dbl&gt; 28.35281, 27.74122, 28.05816, …
+## $ se_salinity      &lt;dbl&gt; 0.2948300, 0.3316667, 0.302880…
+## $ mean_turbidity   &lt;dbl&gt; 27.90740, 24.09800, 20.56529, …
+## $ se_turbidity     &lt;dbl&gt; 1.415117, 1.343495, 1.378571, …
+</code></pre>
+<pre><code class="language-r"># now includes site, day, mean_temperature, se_temperature, mean_salinity, se_salinity, mean_turbidity, se_turbidity
+</code></pre>
+<pre><code class="language-r"># Taxonomic Translation: Scientific journals will not accept &quot;bream&quot; or &quot;flathead&quot;. Use a mutating join to merge your species_dictionary into your catch data, replacing the common names with accurate scientific taxonomy.
+
+glimpse(estuary_catch_log_combined) # species but change to common_name
+</code></pre>
+<pre><code>## Rows: 427
+## Columns: 4
+## $ site    &lt;chr&gt; &quot;lower_ross&quot;, &quot;lower_ross&quot;, &quot;lower_ross…
+## $ date    &lt;date&gt; 2026-05-01, 2026-05-01, 2026-05-01, 20…
+## $ species &lt;chr&gt; &quot;barramundi&quot;, &quot;mangrove_jack&quot;, &quot;bream&quot;,…
+## $ count   &lt;dbl&gt; 6, 3, 4, 2, 1, 1, 3, 3, 2, 3, 1, 8, 4, …
+</code></pre>
+<pre><code class="language-r">glimpse(species_dictionary) # common_name and scientific_name
+</code></pre>
+<pre><code>## Rows: 4
+## Columns: 2
+## $ common_name     &lt;chr&gt; &quot;barramundi&quot;, &quot;mangrove_jack&quot;, …
+## $ scientific_name &lt;chr&gt; &quot;lates_calcarifer&quot;, &quot;lutjanus_a…
+</code></pre>
+<pre><code class="language-r">#install.packages(&quot;dplyr&quot;)
+library(dplyr)
+
+estuary_catch_log_combined &lt;- estuary_catch_log_combined %&gt;%
+  rename(common_name = species) %&gt;%
+  left_join(species_dictionary, by = &quot;common_name&quot;)
+
+glimpse(estuary_catch_log_combined)
+</code></pre>
+<pre><code>## Rows: 427
+## Columns: 5
+## $ site            &lt;chr&gt; &quot;lower_ross&quot;, &quot;lower_ross&quot;, &quot;lo…
+## $ date            &lt;date&gt; 2026-05-01, 2026-05-01, 2026-0…
+## $ common_name     &lt;chr&gt; &quot;barramundi&quot;, &quot;mangrove_jack&quot;, …
+## $ count           &lt;dbl&gt; 6, 3, 4, 2, 1, 1, 3, 3, 2, 3, 1…
+## $ scientific_name &lt;chr&gt; &quot;lates_calcarifer&quot;, &quot;lutjanus_a…
+</code></pre>
+<pre><code class="language-r"># I now have 5 columns - site, date, common_name, count, scientific_name
+</code></pre>
+<pre><code class="language-r"># The Grand Join: Merge your translated catch data, your spatial metadata, and your daily water quality summaries into a single master data frame.
+
+#glimpse(estuary_catch_log_combined)
+# site, date, common_name, count, scientific_name
+#glimpse(estuary_metadata)
+# site, lat, lon, zone
+#glimpse(estuary_sonde_data)
+# site, timestamp, temperature. salinity, turbidity - no longer needed as we just want the mean to be considered for site and day
+#glimpse(daily_summary)
+# site, day, mean_temperature, mean_salinity
+#glimpse(species_dictionary)
+# common_name, scientific_name - no longer needed as we've already joined this info
+
+# output should therefore be : site, date, common_name, count, scientific_name, lat, lon, zone, mean_temperature, mean_salinity
+
+master_df &lt;- estuary_catch_log_combined %&gt;%
+  left_join(estuary_metadata, by = &quot;site&quot;) %&gt;%
+  left_join(daily_summary, by = c(&quot;site&quot;, &quot;date&quot; = &quot;day&quot;))
+
+glimpse(master_df)
+</code></pre>
+<pre><code>## Rows: 427
+## Columns: 14
+## $ site             &lt;chr&gt; &quot;lower_ross&quot;, &quot;lower_ross&quot;, &quot;l…
+## $ date             &lt;dttm&gt; 2026-05-01, 2026-05-01, 2026-…
+## $ common_name      &lt;chr&gt; &quot;barramundi&quot;, &quot;mangrove_jack&quot;,…
+## $ count            &lt;dbl&gt; 6, 3, 4, 2, 1, 1, 3, 3, 2, 3, …
+## $ scientific_name  &lt;chr&gt; &quot;lates_calcarifer&quot;, &quot;lutjanus_…
+## $ lat              &lt;dbl&gt; -19.26, -19.26, -19.26, -19.26…
+## $ lon              &lt;dbl&gt; 146.81, 146.81, 146.81, 146.81…
+## $ zone             &lt;chr&gt; &quot;Downstream&quot;, &quot;Downstream&quot;, &quot;D…
+## $ mean_temperature &lt;dbl&gt; 23.79137, 23.79137, 23.79137, …
+## $ se_temperature   &lt;dbl&gt; 0.1473620, 0.1473620, 0.147362…
+## $ mean_salinity    &lt;dbl&gt; 28.35281, 28.35281, 28.35281, …
+## $ se_salinity      &lt;dbl&gt; 0.2948300, 0.2948300, 0.294830…
+## $ mean_turbidity   &lt;dbl&gt; 27.90740, 27.90740, 27.90740, …
+## $ se_turbidity     &lt;dbl&gt; 1.415117, 1.415117, 1.415117, …
+</code></pre>
+<pre><code class="language-r"># columns = site, date, common_name, count, scientific_name, lat, lon, zone, mean_temperature, mean_salinity - SUCCESS!
+
+# new daily summary now includes : mean_salinity, se_salinity, mean_temperature, se_temperature, mean_turbidity, se_turbidity
+# so the master_df has site, date, common_name, count, scientific_name, lat, lon, zone, mean_temperature, se_temperature, mean_salinity, se_salinity, mean_turbidity, se_turbidity
+</code></pre>
+<pre><code class="language-r"># Phase 3: The Zero-Catch Framework 
+# The former student only recorded a row when they actually caught a fish
+
+# Use tidyr::complete() to build a zero-data framework. Ensure that every species is represented at every site, on every sampling day.
+
+master_df_completed &lt;- master_df %&gt;%
+  tidyr::complete(site, common_name, date)
+
+glimpse(master_df_completed)
+</code></pre>
+<pre><code>## Rows: 480
+## Columns: 14
+## $ site             &lt;chr&gt; &quot;lower_ross&quot;, &quot;lower_ross&quot;, &quot;l…
+## $ common_name      &lt;chr&gt; &quot;barramundi&quot;, &quot;barramundi&quot;, &quot;b…
+## $ date             &lt;dttm&gt; 2026-05-01, 2026-05-02, 2026-…
+## $ count            &lt;dbl&gt; 6, 1, NA, 1, 1, 4, 1, 2, 3, NA…
+## $ scientific_name  &lt;chr&gt; &quot;lates_calcarifer&quot;, &quot;lates_cal…
+## $ lat              &lt;dbl&gt; -19.26, -19.26, NA, -19.26, -1…
+## $ lon              &lt;dbl&gt; 146.81, 146.81, NA, 146.81, 14…
+## $ zone             &lt;chr&gt; &quot;Downstream&quot;, &quot;Downstream&quot;, NA…
+## $ mean_temperature &lt;dbl&gt; 23.79137, 23.98099, NA, 24.012…
+## $ se_temperature   &lt;dbl&gt; 0.1473620, 0.1618928, NA, 0.15…
+## $ mean_salinity    &lt;dbl&gt; 28.35281, 27.74122, NA, 28.226…
+## $ se_salinity      &lt;dbl&gt; 0.2948300, 0.3316667, NA, 0.32…
+## $ mean_turbidity   &lt;dbl&gt; 27.90740, 24.09800, NA, 28.361…
+## $ se_turbidity     &lt;dbl&gt; 1.415117, 1.343495, NA, 1.3483…
+</code></pre>
+<pre><code class="language-r"># Replace the resulting NA values in the catch column with 0 using coalesce().
+
+master_df_completed &lt;- master_df_completed %&gt;%
+  mutate(
+    count = coalesce(count, 0)
+  )
+
+glimpse(master_df_completed)
+</code></pre>
+<pre><code>## Rows: 480
+## Columns: 14
+## $ site             &lt;chr&gt; &quot;lower_ross&quot;, &quot;lower_ross&quot;, &quot;l…
+## $ common_name      &lt;chr&gt; &quot;barramundi&quot;, &quot;barramundi&quot;, &quot;b…
+## $ date             &lt;dttm&gt; 2026-05-01, 2026-05-02, 2026-…
+## $ count            &lt;dbl&gt; 6, 1, 0, 1, 1, 4, 1, 2, 3, 0, …
+## $ scientific_name  &lt;chr&gt; &quot;lates_calcarifer&quot;, &quot;lates_cal…
+## $ lat              &lt;dbl&gt; -19.26, -19.26, NA, -19.26, -1…
+## $ lon              &lt;dbl&gt; 146.81, 146.81, NA, 146.81, 14…
+## $ zone             &lt;chr&gt; &quot;Downstream&quot;, &quot;Downstream&quot;, NA…
+## $ mean_temperature &lt;dbl&gt; 23.79137, 23.98099, NA, 24.012…
+## $ se_temperature   &lt;dbl&gt; 0.1473620, 0.1618928, NA, 0.15…
+## $ mean_salinity    &lt;dbl&gt; 28.35281, 27.74122, NA, 28.226…
+## $ se_salinity      &lt;dbl&gt; 0.2948300, 0.3316667, NA, 0.32…
+## $ mean_turbidity   &lt;dbl&gt; 27.90740, 24.09800, NA, 28.361…
+## $ se_turbidity     &lt;dbl&gt; 1.415117, 1.343495, NA, 1.3483…
+</code></pre>
+<pre><code class="language-r"># Phase 4: Statistical Extraction From your master dataset, generate a clean summary table showing the mean ± standard error of both the fish catch and the salinity for each scientific species across each estuary zone.
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+# Generate the clean summary table
+summary_table &lt;- master_df_completed %&gt;%
+  group_by(scientific_name, zone) %&gt;%
+  summarise(
+    # For 'count', calculate its mean and SE from the raw 'count' column
+    mean_count = mean(count, na.rm = TRUE),
+    se_count = sd(count, na.rm = TRUE) / sqrt(sum(!is.na(count))),
+    
+    # For environmental parameters, take the mean of the already existing 'mean_' and 'se_' columns
+    # (assuming these are representative values that should be averaged across groups)
+    salinity_mean_agg = mean(mean_salinity, na.rm = TRUE),
+    salinity_se_agg = mean(se_salinity, na.rm = TRUE), # Averaging provided SEs
+    
+    turbidity_mean_agg = mean(mean_turbidity, na.rm = TRUE),
+    turbidity_se_agg = mean(se_turbidity, na.rm = TRUE), # Averaging provided SEs
+    
+    temperature_mean_agg = mean(mean_temperature, na.rm = TRUE),
+    temperature_se_agg = mean(se_temperature, na.rm = TRUE), # Averaging provided SEs
+    
+    .groups = &quot;drop&quot;
+  ) %&gt;%
+  mutate(
+    `Fish Count (mean ± SE)` = str_glue(&quot;{round(mean_count, 2)} ± {round(se_count, 2)}&quot;),
+    `Salinity (mean ± SE)` = str_glue(&quot;{round(salinity_mean_agg, 2)} ± {round(salinity_se_agg, 2)}&quot;),
+    `Turbidity (mean ± SE)` = str_glue(&quot;{round(turbidity_mean_agg, 2)} ± {round(turbidity_se_agg, 2)}&quot;),
+    `Temperature (mean ± SE)` = str_glue(&quot;{round(temperature_mean_agg, 2)} ± {round(temperature_se_agg, 2)}&quot;)
+  ) %&gt;%
+  select(
+    scientific_name,
+    zone,
+    `Fish Count (mean ± SE)`,
+    `Salinity (mean ± SE)`,
+    `Turbidity (mean ± SE)`,
+    `Temperature (mean ± SE)`
+  )
+
+summary_table
+</code></pre>
+<pre><code>## # A tibble: 17 × 6
+##    scientific_name           zone  Fish Count (mean ± S…¹
+##    &lt;chr&gt;                     &lt;chr&gt; &lt;glue&gt;                
+##  1 acanthopagrus_spp.        Down… 2.5 ± 0.26            
+##  2 acanthopagrus_spp.        Mari… 2.59 ± 0.35           
+##  3 acanthopagrus_spp.        Midd… 2.48 ± 0.28           
+##  4 acanthopagrus_spp.        Upst… 2.75 ± 0.29           
+##  5 lates_calcarifer          Down… 2 ± 0.26              
+##  6 lates_calcarifer          Mari… 1.81 ± 0.25           
+##  7 lates_calcarifer          Midd… 2.36 ± 0.23           
+##  8 lates_calcarifer          Upst… 4.8 ± 0.31            
+##  9 lutjanus_argentimaculatus Down… 2.22 ± 0.3            
+## 10 lutjanus_argentimaculatus Mari… 1.88 ± 0.19           
+## 11 lutjanus_argentimaculatus Midd… 2.27 ± 0.17           
+## 12 lutjanus_argentimaculatus Upst… 2.11 ± 0.19           
+## 13 platycephalus_spp.        Down… 2.17 ± 0.17           
+## 14 platycephalus_spp.        Mari… 5.67 ± 0.24           
+## 15 platycephalus_spp.        Midd… 2.36 ± 0.25           
+## 16 platycephalus_spp.        Upst… 2.76 ± 0.33           
+## 17 &lt;NA&gt;                      &lt;NA&gt;  0 ± 0                 
+## # ℹ abbreviated name: ¹​`Fish Count (mean ± SE)`
+## # ℹ 3 more variables: `Salinity (mean ± SE)` &lt;glue&gt;,
+## #   `Turbidity (mean ± SE)` &lt;glue&gt;,
+## #   `Temperature (mean ± SE)` &lt;glue&gt;
+</code></pre>
+<pre><code class="language-r"># Phase 5: Visual Communication
+# Prove that your data rescue was successful. Construct a multi-panel plot using ggplot2 and facet_wrap().
+# The Goal: Visualise how the abundance of different species changes along the salinity gradient.
+# The Requirement: The plot should have professional axis labels, a clean theme (e.g., theme_minimal()), be ordered spatially (e.g. from upstream to downstream), and the facet labels (the scientific names) should really be italicised!
+
+
+library(dplyr)
+library(ggplot2)
+
+master_df_completed &lt;- master_df_completed %&gt;%
+  filter(!is.na(scientific_name)) %&gt;%
+  mutate(
+    zone = factor(zone,
+                  levels = c(&quot;Upstream&quot;, &quot;Middle&quot;, &quot;Downstream&quot;, &quot;Marine&quot;)),
+    scientific_name = scientific_name %&gt;%
+      str_replace_all(&quot;_&quot;, &quot; &quot;) %&gt;%
+      str_to_title() %&gt;%                 # Capitalises each word
+      str_replace_all(&quot; &quot;, &quot;~&quot;) %&gt;%      # needed for italic parsing in ggplot
+      paste0(&quot;italic('&quot;, ., &quot;')&quot;)
+  )
+
+
+ggplot(master_df_completed,
+       aes(x = zone, y = count)) +
+  
+  geom_boxplot(fill = &quot;steelblue&quot;, alpha = 0.6, outlier.alpha = 0.3) +
+  geom_jitter(width = 0.15, alpha = 0.4, size = 1) +
+  
+  facet_wrap(~ scientific_name,
+             labeller = labeller(
+               scientific_name = label_parsed
+             )) +
+  
+  labs(
+    title = &quot;Fish Abundance Across Estuarine Salinity Gradient&quot;,
+    x = &quot;Estuary Zone (Salinity Gradient)&quot;,
+    y = &quot;Catch Abundance (Count)&quot;
+  ) +
+  
+  theme_minimal(base_size = 12) +
+  
+  theme(
+    strip.text = element_text(face = &quot;italic&quot;),  # italic species names
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-15" /></p>
